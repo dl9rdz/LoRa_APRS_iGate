@@ -16,6 +16,7 @@
 #include "TaskOTA.h"
 #include "TaskRouter.h"
 #include "TaskWifi.h"
+#include "TaskKiss.h"
 #include "project_configuration.h"
 
 #define VERSION "21.25.0"
@@ -38,13 +39,16 @@ OTATask     otaTask;
 NTPTask     ntpTask;
 FTPTask     ftpTask;
 AprsIsTask  aprsIsTask(toAprsIs);
+KissTask    kissTask(toAprsIs);
 RouterTask  routerTask(fromModem, toModem, toAprsIs);
 
 void setup() {
   Serial.begin(115200);
   Logger::instance().setSerial(&Serial);
+  // no logging in serial port if KISS mode is active
+  Logger::instance().setDebugLevel(Logger::DEBUG_LEVEL_NONE);
   delay(500);
-  logPrintlnI("LoRa APRS iGate by OE5BPA (Peter Buchegger)");
+  logPrintlnI("LoRa APRS iGate by OE5BPA (Peter Buchegger) -- KISS version by DL9RDZ");
   logPrintlnI("Version: " VERSION);
 
   std::list<BoardConfig const *> boardConfigs;
@@ -111,6 +115,9 @@ void setup() {
       LoRaSystem.getTaskManager().addTask(&ftpTask);
     }
     LoRaSystem.getTaskManager().addTask(&aprsIsTask);
+  } else {
+    // Use serial port as kiss interface
+    LoRaSystem.getTaskManager().addTask(&kissTask);
   }
 
   LoRaSystem.getTaskManager().setup(LoRaSystem);
@@ -123,12 +130,16 @@ void setup() {
     while (true)
       ;
   }
+  #if 0
   if ((!userConfig.aprs_is.active) && !(userConfig.digi.active)) {
     logPrintlnE("No mode selected (iGate or Digi)! You have to activate one of iGate or Digi.");
     LoRaSystem.getDisplay().showStatusScreen("ERROR", "No mode selected (iGate or Digi)! You have to activate one of iGate or Digi.");
     while (true)
       ;
   }
+  #else
+    logPrintlnI("neither iGate nor Digi active, selecting KISS mode");
+  #endif
 
   if (userConfig.display.overwritePin != 0) {
     pinMode(userConfig.display.overwritePin, INPUT);

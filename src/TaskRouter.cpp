@@ -34,7 +34,7 @@ bool RouterTask::loop(System &system) {
   if (!_fromModem.empty()) {
     std::shared_ptr<APRSMessage> modemMsg = _fromModem.getElement();
 
-    if (system.getUserConfig()->aprs_is.active && modemMsg->getSource() != system.getUserConfig()->callsign) {
+    if (/*system.getUserConfig()->aprs_is.active &&*/ modemMsg->getSource() != system.getUserConfig()->callsign) {
       std::shared_ptr<APRSMessage> aprsIsMsg = std::make_shared<APRSMessage>(*modemMsg);
       String                       path      = aprsIsMsg->getPath();
 
@@ -43,8 +43,10 @@ bool RouterTask::loop(System &system) {
           path += ",";
         }
 
-        aprsIsMsg->setPath(path + "qAR," + system.getUserConfig()->callsign);
-
+	if(system.getUserConfig()->aprs_is.active) {
+	  aprsIsMsg->setPath(path + "qAR," + system.getUserConfig()->callsign);
+	}
+        // qAR, CALL not appending in KISS mode
         logPrintD("APRS-IS: ");
         logPrintlnD(aprsIsMsg->toString());
         _toAprsIs.addElement(aprsIsMsg);
