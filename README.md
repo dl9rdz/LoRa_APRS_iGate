@@ -8,6 +8,36 @@ Try it out and be part of the APRS network.
 
 ![TTGO LoRa32](pics/iGate.png)
 
+## KISS mode
+
+This is a modified version which can be used as a serial KISS TNC (no WiFi connection required)
+
+digi has to be active: false
+aprs_is has to be active: false
+
+### Use with aprx: Add this to the config (/etc/aprx.conf):
+
+```
+<interface>
+   serial-device /dev/ttyUSB0  115200 8n1    KISS
+#   #callsign     $mycall  # callsign defaults to $mycall
+#   #tx-ok        false    # transmitter enable defaults to false
+#   #telem-to-is  true # set to 'false' to disable
+</interface>
+```
+
+### use with dxlAPRS
+
+(For unknown reason, selecting the baud rate with direct access to USB serial port fails for me)
+
+Working workaround: use socat as a bridge between serial port and TCP, let udpflex use TCP KISS port
+(all other parameters need fine-tuning...)
+```
+socat -v TCP-LISTEN:8888,reuseaddr /dev/ttyUSB0,b115200,raw,echo=0  &
+udpflex -T 127.0.0.1:8888 -V -U 127.0.0.1:9001:9002 &
+udpgate4 -S MYCALL-10 -R 127.0.0.1:9002:9001 -g rotate.aprs.net:14580 -p passcode  ...
+```
+
 ## Blog posts and Youtube videos from other Hams
 
 * [Manuel Lausmann - iGate & Tracker](https://www.youtube.com/watch?v=-KdFQEaNC1k) (youtube - german) 04.06.2021
