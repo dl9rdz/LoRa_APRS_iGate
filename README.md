@@ -37,6 +37,25 @@ socat -v TCP-LISTEN:8888,reuseaddr /dev/ttyUSB0,b115200,raw,echo=0  &
 udpflex -T 127.0.0.1:8888 -V -U 127.0.0.1:9001:9002 &
 udpgate4 -S MYCALL-10 -R 127.0.0.1:9002:9001 -g rotate.aprs.net:14580 -p passcode  ...
 ```
+## use with remote aprx:
+
+On host with USB connection to TTGO:
+```
+socat -v TCP-LISTEN:6700,reuseaddr /dev/ttyUSB0,b115200,raw,echo=0
+```
+
+On aprx host: Add this to the config /etc/aprx.conf
+```
+<interface>
+   tcp-device   <IP of TTGO host> 6700 KISS
+   callsign 	CALL-15
+   tx-ok        false
+   telem-to-is  true
+</interface>
+
+
+```
+
 
 ## Blog posts and Youtube videos from other Hams
 
